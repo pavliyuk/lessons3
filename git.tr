@@ -1,0 +1,45 @@
+provider "github" {
+
+  token = file("./token.em")
+  owner = "pavliyuk"
+}
+#create repository
+resource "github_repository" "lessons3" {
+  name        = "lessons3"
+  description = "My lessons3"
+
+  allow_merge_commit = true
+  allow_rebase_merge = false
+  allow_squash_merge = false
+
+  auto_init = true
+}
+#create branch
+resource "github_branch" "development" {
+  repository = "lessons3"
+  branch     = "development"
+}
+#create test file
+resource "github_repository_file" "gitignore" {
+  repository = "lessons3"
+  file       = ".gitignore"
+  content    = "shh_public.ppk"
+}
+resource "github_repository_file" "terraform" {
+  repository = "lessons3"
+  file       = "git.tr"
+  content    = file("./gitpush.tf")
+}
+#generation ssh key
+resource "github_repository_deploy_key" "lessons3" {
+  title      = "Repository test key"
+  repository = "lessons3"
+  key        = file("./shh_public.ppk")
+  read_only  = "false"
+}
+#Security branch
+resource "github_branch_protection" "lessons3" {
+  repository_id  = github_repository.lessons3.node_id
+  pattern        = "main"
+  enforce_admins = true
+}
